@@ -63,31 +63,35 @@ struct ContentView: View {
                     TextField("",value: $fileID, format: .number)
                     .onChange(of: fileID) {
                         UserDefaults.standard.set($0, forKey: "fileID")
-                    }
+                    }.disabled(mystarted==1)
+                    .foregroundColor(mystarted==1 ? .black : .white)
                 }
                 HStack {
                     Text("Volume")
                     TextField("",value: $volume, format: .number)
                     .onChange(of: volume) {
                         UserDefaults.standard.set($0, forKey: "volume")
-                    }
+                    }.disabled(mystarted==1)
+                    .foregroundColor(mystarted==1 ? .black : .white)
                 }
                 HStack {
                     Text("Record length")
                     TextField("",value: $total_time, format: .number)
                     .onChange(of: total_time) {
                         UserDefaults.standard.set($0, forKey: "total_time")
-                    }
+                    }.disabled(mystarted==1)
+                     .foregroundColor(mystarted==1 ? .black : .white)
                 }
                 Text(String(ts))
                 Button("start") {
                     startSensors()
                 }.disabled(mystarted==1)
                     .foregroundColor(mystarted==0 ? .blue : .black)
-                Button("stop") {
-                    stopSensors()
-                }.disabled(mystarted==0)
-                    .foregroundColor(mystarted==1 ? .blue : .black)
+//                Button("stop") {
+//                    stopSensors()
+//                }.disabled(true)
+//                .disabled(mystarted==0)
+//                    .foregroundColor(mystarted==1 ? .blue : .black)
             }
         }
         .padding()
@@ -182,7 +186,6 @@ struct ContentView: View {
     }
     
     func startSensors() {
-        
         AVAudioSession.sharedInstance().requestRecordPermission { granted in
             if granted {
                 print ("mic granted")
@@ -196,7 +199,7 @@ struct ContentView: View {
         mystarted=1
         
         let audio_filename = "audio-\(ts).caf"
-        DispatchQueue.background(background: {
+        let test=DispatchQueue.background(background: {
             myrecord(filename: audio_filename, maxtime: total_time)
         }, completion:{
         })
