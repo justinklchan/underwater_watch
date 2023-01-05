@@ -24,17 +24,24 @@ extension DispatchQueue {
 
 struct ContentView: View {
     let motion = CMMotionManager()
+    let locationManager = CLLocationManager()
     
     @State var timer_accel:Timer?
     @State var timer_gyro:Timer?
     @State var timer_mag:Timer?
-    
+        
     @State var accel_file_url:URL?
     @State var accel_fileHandle:FileHandle?
     @State var gyro_file_url:URL?
     @State var gyro_fileHandle:FileHandle?
     @State var mag_file_url:URL?
     @State var mag_fileHandle:FileHandle?
+    @State var alt_abs_file_url:URL?
+    @State var alt_abs_fileHandle:FileHandle?
+    @State var alt_rel_file_url:URL?
+    @State var alt_rel_fileHandle:FileHandle?
+        
+    @State var altitudeManager:CMAltimeter = CMAltimeter()
     
     @State var ts: Double = 0
     @State var mystarted:Int=0
@@ -175,12 +182,12 @@ struct ContentView: View {
     }
     
     func startSensors() {
-        print ("volume \(volume)")
+        
         AVAudioSession.sharedInstance().requestRecordPermission { granted in
             if granted {
-                print ("granted")
+                print ("mic granted")
             } else {
-                print ("not granted")
+                print ("mic not granted")
             }
         }
         
@@ -241,6 +248,51 @@ struct ContentView: View {
                 print("Error writing to file \(error)")
             }
             
+            do {
+                let file = "alt_abs_file_\(ts).txt"
+                if let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.nmslab") {
+                    alt_abs_file_url = dir.appendingPathComponent(file)
+                }
+
+                // write first line of file
+                try "ts,x,y,z\n".write(to: alt_abs_file_url!, atomically: true, encoding: String.Encoding.utf8)
+
+                alt_abs_fileHandle = try FileHandle(forWritingTo: alt_abs_file_url!)
+                alt_abs_fileHandle!.seekToEndOfFile()
+            } catch {
+                print("Error writing to file \(error)")
+            }
+            
+            do {
+                let file = "alt_rel_file_\(ts).txt"
+                if let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.nmslab") {
+                    alt_rel_file_url = dir.appendingPathComponent(file)
+                }
+
+                // write first line of file
+                try "ts,x,y,z\n".write(to: alt_rel_file_url!, atomically: true, encoding: String.Encoding.utf8)
+
+                alt_rel_fileHandle = try FileHandle(forWritingTo: alt_rel_file_url!)
+                alt_rel_fileHandle!.seekToEndOfFile()
+            } catch {
+                print("Error writing to file \(error)")
+            }
+            
+            altitudeManager.startRelativeAltitudeUpdates(to: OperationQueue.main) { (data, error) in
+                let timeStamp = NSDate().timeIntervalSince1970
+                let relAlt = data!.relativeAltitude.stringValue
+                let pressure = data!.pressure.stringValue
+                let text1 = "\(timeStamp), \(relAlt), \(pressure)\n"
+                self.alt_rel_fileHandle!.write(text1.data(using: .utf8)!)
+            }
+            
+            altitudeManager.startAbsoluteAltitudeUpdates(to: OperationQueue.main) { data, error in
+                    if error != nil { return }
+                        let timeStamp = NSDate().timeIntervalSince1970
+                        let text1 = "\(timeStamp), \(data!)\n"
+                        self.alt_abs_fileHandle!.write(text1.data(using: .utf8)!)
+                    }
+            
             //START
             let timestamp0 = NSDate().timeIntervalSince1970
             self.motion.startDeviceMotionUpdates(using: .xMagneticNorthZVertical, to: OperationQueue.current!, withHandler: { (data, error) in
@@ -282,6 +334,8 @@ struct ContentView: View {
     func stopSensors() {
         mystarted=0
         self.motion.stopDeviceMotionUpdates()
+        altitudeManager.stopRelativeAltitudeUpdates()
+        altitudeManager.stopAbsoluteAltitudeUpdates()
         
         if self.accel_fileHandle != nil {
             accel_fileHandle!.closeFile()
@@ -297,6 +351,16 @@ struct ContentView: View {
             mag_fileHandle!.closeFile()
             print (mag_file_url!)
             mag_fileHandle = nil
+        }
+        if self.alt_abs_fileHandle != nil {
+            alt_abs_fileHandle!.closeFile()
+            print (alt_abs_file_url!)
+            alt_abs_fileHandle = nil
+        }
+        if self.alt_rel_fileHandle != nil {
+            alt_rel_fileHandle!.closeFile()
+            print (alt_rel_file_url!)
+            alt_rel_fileHandle = nil
         }
         
         print ("stop")

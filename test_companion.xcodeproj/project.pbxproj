@@ -675,6 +675,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "test-companion-Watch-App-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = test_companion;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = asdf;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = asdf;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = asdf;
 				INFOPLIST_KEY_NSMotionUsageDescription = testing;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
@@ -709,6 +711,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "test-companion-Watch-App-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = test_companion;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = asdf;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = asdf;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = asdf;
 				INFOPLIST_KEY_NSMotionUsageDescription = testing;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
